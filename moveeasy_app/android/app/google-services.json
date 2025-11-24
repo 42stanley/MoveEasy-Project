@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1083708969304",
+    "project_id": "moveeasy-478313",
+    "storage_bucket": "moveeasy-478313.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1083708969304:android:55f2d055fa6d7b2b75152d",
+        "android_client_info": {
+          "package_name": "com.example.moveeasy_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiNj0IePDDUiliJYP5jxmVgCiw8qhylcI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
