@@ -25,13 +25,25 @@ jwt = JWTManager(app)
 # === FIREBASE (SAFE INITIALIZATION) ===
 firebase_initialized = False
 try:
-    cred_path = os.environ.get('FIREBASE_KEY_PATH', r"C:\MoveEasy_project\moveeasy-478313-firebase-adminsdk-fbsvc-743d74e7b1.json")
+    # Try to load from environment variable first (Railway/Production)
+    cred_json = os.environ.get('FIREBASE_CREDENTIALS')
+    if cred_json:
+        logger.info("Loading Firebase credentials from environment variable")
+        cred_dict = json.loads(cred_json)
+        cred = credentials.Certificate(cred_dict)
+    else:
+        # Fallback to file path (local development)
+        logger.info("Loading Firebase credentials from file")
+        cred_path = os.environ.get('FIREBASE_KEY_PATH', r"C:\MoveEasy_project\moveeasy-478313-firebase-adminsdk-fbsvc-743d74e7b1.json")
+        if os.path.exists(cred_path):
+            cred = credentials.Certificate(cred_path)
+        else:
+            raise FileNotFoundError(f"Firebase key file not found at {cred_path}")
+    
     database_url = os.environ.get('DATABASE_URL', 'https://moveeasy-478313-default-rtdb.firebaseio.com/')
-    if os.path.exists(cred_path):
-        cred = credentials.Certificate(cred_path)
-        firebase_admin.initialize_app(cred, {'databaseURL': database_url})
-        firebase_initialized = True
-        logger.info("Firebase initialized successfully")
+    firebase_admin.initialize_app(cred, {'databaseURL': database_url})
+    firebase_initialized = True
+    logger.info("Firebase initialized successfully")
 except Exception as e:
     logger.warning(f"Firebase disabled: {e}")
     firebase_initialized = False
