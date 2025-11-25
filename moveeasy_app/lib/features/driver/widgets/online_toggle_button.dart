@@ -12,7 +12,6 @@ class OnlineToggleButton extends StatefulWidget {
 }
 
 class _OnlineToggleButtonState extends State<OnlineToggleButton> {
-  bool _isOnline = false;
   StreamSubscription<Position>? _positionStream;
 
   @override
@@ -21,14 +20,16 @@ class _OnlineToggleButtonState extends State<OnlineToggleButton> {
     super.dispose();
   }
 
-  Future<void> _toggleOnline() async {
-    if (_isOnline) {
+  Future<void> _toggleOnline(bool currentlyOnline) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    if (currentlyOnline) {
+      // Go offline
       _positionStream?.cancel();
       await FirebaseFirestore.instance
           .collection('drivers_online')
-          .doc(FirebaseAuth.instance.currentUser!.uid)
+          .doc(uid)
           .delete();
-      setState(() => _isOnline = false);
       return;
     }
 
@@ -65,8 +66,6 @@ class _OnlineToggleButtonState extends State<OnlineToggleButton> {
       return;
     }
 
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
     try {
       // Mark online in Firestore
       await FirebaseFirestore.instance.collection('drivers_online').doc(uid).set({
@@ -87,8 +86,6 @@ class _OnlineToggleButtonState extends State<OnlineToggleButton> {
           'lastSeen': FieldValue.serverTimestamp(),
         });
       });
-
-      setState(() => _isOnline = true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -100,55 +97,76 @@ class _OnlineToggleButtonState extends State<OnlineToggleButton> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: _isOnline ? [Colors.green[400]!, Colors.green[700]!] : [Colors.grey[400]!, Colors.grey[600]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: (_isOnline ? Colors.green : Colors.grey).withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _isOnline ? 'You\'re Online' : 'You\'re Offline',
-                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _isOnline ? 'Accepting ride requests' : 'Tap to go online',
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    
+    if (uid == null) {
+      return const SizedBox.shrink();
+    }
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('drivers_online')
+          .doc(uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        // Determine if driver is online based on Firestore data
+        bool isOnline = false;
+        if (snapshot.hasData && snapshot.data!.exists) {
+          final data = snapshot.data!.data() as Map<String, dynamic>?;
+          isOnline = data?['online'] == true;
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isOnline ? [Colors.green[400]!, Colors.green[700]!] : [Colors.grey[400]!, Colors.grey[600]!],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: (isOnline ? Colors.green : Colors.grey).withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          ElevatedButton(
-            onPressed: _toggleOnline,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: _isOnline ? Colors.green[700] : Colors.grey[700],
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: Text(
-              _isOnline ? 'GO OFFLINE' : 'GO ONLINE',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    isOnline ? 'You\'re Online' : 'You\'re Offline',
+                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isOnline ? 'Accepting ride requests' : 'Tap to go online',
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+              ElevatedButton(
+                onPressed: () => _toggleOnline(isOnline),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: isOnline ? Colors.green[700] : Colors.grey[700],
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(
+                  isOnline ? 'GO OFFLINE' : 'GO ONLINE',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
