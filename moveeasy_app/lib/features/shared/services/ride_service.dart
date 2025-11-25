@@ -70,4 +70,29 @@ class RideService {
 
     return snapshot.docs.isNotEmpty;
   }
+
+  // Get active trips for a driver
+  Stream<QuerySnapshot> getActiveTripsForDriver(String driverId) {
+    return _firestore
+        .collection('ride_requests')
+        .where('driverId', isEqualTo: driverId)
+        .where('status', isEqualTo: 'accepted')
+        .snapshots();
+  }
+
+  // Get a specific ride request by ID (for real-time updates)
+  Stream<DocumentSnapshot> getRideRequestById(String requestId) {
+    return _firestore
+        .collection('ride_requests')
+        .doc(requestId)
+        .snapshots();
+  }
+
+  // Cancel a ride request
+  Future<void> cancelRequest(String requestId) async {
+    await _firestore
+        .collection('ride_requests')
+        .doc(requestId)
+        .update({'status': 'cancelled'});
+  }
 }

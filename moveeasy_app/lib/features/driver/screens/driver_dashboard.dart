@@ -6,6 +6,7 @@ import 'driver_profile.dart';
 import '../widgets/online_toggle_button.dart';
 import '../widgets/driver_stats_row.dart';
 import '../widgets/incoming_requests_list.dart';
+import '../widgets/active_trips_list.dart';
 import '../widgets/today_trips_list.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
@@ -66,6 +67,10 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
 
             // Stats Row
             const DriverStatsRow(),
+            const SizedBox(height: 24),
+
+            // Active Trips (NEW)
+            const ActiveTripsList(),
             const SizedBox(height: 24),
 
             // Incoming Requests
