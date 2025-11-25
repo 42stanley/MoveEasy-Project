@@ -2,3 +2,4 @@ flask
 flask-jwt-extended
 firebase-admin
 protobuf
+gtfs-realtime-bindings
