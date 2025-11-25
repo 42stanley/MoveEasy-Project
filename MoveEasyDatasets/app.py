@@ -68,7 +68,7 @@ def login():
     return jsonify({"error": "Invalid credentials"}), 401
 
 @app.route('/api/stops')
-@jwt_required()
+# @jwt_required()
 def get_stops():
     try:
         if firebase_initialized:
@@ -87,7 +87,7 @@ def get_stops():
     return jsonify(mock_stops)
 
 @app.route('/api/routes')
-@jwt_required()
+# @jwt_required()
 def get_routes():
     try:
         if firebase_initialized:
@@ -96,6 +96,40 @@ def get_routes():
     except Exception:
         pass
     return jsonify([])
+
+@app.route('/api/driver/stats/<driver_id>')
+# @jwt_required()
+def get_driver_stats(driver_id):
+    # Mock data - in real app query Firebase/SQL
+    return jsonify({
+        "earnings": "KES 4,500",
+        "trips": 12,
+        "hours": 6.5
+    })
+
+@app.route('/api/driver/trips/<driver_id>')
+# @jwt_required()
+def get_driver_trips(driver_id):
+    return jsonify([
+        {"route": "Kawangware -> CBD", "time": "10:30 AM", "price": "KES 150"},
+        {"route": "Westlands -> Kawangware", "time": "09:15 AM", "price": "KES 200"},
+        {"route": "CBD -> Westlands", "time": "08:00 AM", "price": "KES 100"},
+        {"route": "Kawangware -> Westlands", "time": "07:15 AM", "price": "KES 180"},
+    ])
+
+@app.route('/api/driver/reviews/<driver_id>')
+# @jwt_required()
+def get_driver_reviews(driver_id):
+    return jsonify({
+        "rating": 4.8,
+        "count": 124,
+        "reviews": [
+            {"name": "John Doe", "comment": "Great driver, very smooth ride!", "rating": 5, "date": "Today"},
+            {"name": "Jane Smith", "comment": "Arrived on time, clean bus.", "rating": 5, "date": "Yesterday"},
+            {"name": "Michael Brown", "comment": "A bit fast on the corners.", "rating": 4, "date": "2 days ago"},
+            {"name": "Sarah Wilson", "comment": "Very polite and helpful.", "rating": 5, "date": "Last week"},
+        ]
+    })
 
 # === SMOOTH GTFS-REALTIME - NO MORE JITTER! ===
 def get_bearing(lat1, lon1, lat2, lon2):
@@ -111,7 +145,7 @@ def get_bearing(lat1, lon1, lat2, lon2):
     return (bearing + 360) % 360
 
 @app.route('/api/gtfs-realtime')
-@jwt_required()
+# @jwt_required()
 def gtfs_realtime():
     feed = gtfs_realtime_pb2.FeedMessage()
     feed.header.gtfs_realtime_version = "2.0"
@@ -162,4 +196,4 @@ def gtfs_realtime():
 
 # === RUN ===
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=5001, debug=False, threaded=True)
