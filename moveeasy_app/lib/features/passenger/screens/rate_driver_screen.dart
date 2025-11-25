@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RateDriverScreen extends StatefulWidget {
   final String requestId;
@@ -42,9 +43,22 @@ class _RateDriverScreenState extends State<RateDriverScreen> {
     setState(() => _submitting = true);
 
     try {
+      // Fetch passenger details
+      final user = FirebaseAuth.instance.currentUser;
+      String passengerName = 'Passenger';
+      
+      if (user != null) {
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        if (userDoc.exists) {
+          passengerName = userDoc.data()?['name'] ?? 'Passenger';
+        }
+      }
+
       await FirebaseFirestore.instance.collection('reviews').add({
         'requestId': widget.requestId,
         'driverId': widget.driverId,
+        'passengerId': user?.uid,
+        'passengerName': passengerName,
         'rating': _rating,
         'comment': _commentController.text.trim(),
         'tags': _selectedFeedback.toList(),
