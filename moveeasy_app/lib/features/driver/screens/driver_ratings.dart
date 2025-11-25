@@ -32,7 +32,7 @@ class _DriverRatingsScreenState extends State<DriverRatingsScreen> {
               stream: FirebaseFirestore.instance
                   .collection('reviews')
                   .where('driverId', isEqualTo: driverId)
-                  .orderBy('createdAt', descending: true) // Newest first
+                  .orderBy('timestamp', descending: true) // Newest first
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -98,9 +98,9 @@ class _DriverRatingsScreenState extends State<DriverRatingsScreen> {
                     else
                       ...reviews.map((doc) {
                         final data = doc.data() as Map<String, dynamic>;
-                        final createdAt = data['createdAt'] as Timestamp?;
-                        final dateStr = createdAt != null
-                            ? '${createdAt.toDate().day}/${createdAt.toDate().month}/${createdAt.toDate().year}'
+                        final timestamp = data['timestamp'] as Timestamp?;
+                        final dateStr = timestamp != null
+                            ? '${timestamp.toDate().day}/${timestamp.toDate().month}/${timestamp.toDate().year}'
                             : 'N/A';
                         
                         return ReviewItem(
