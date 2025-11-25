@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'driver_earnings.dart';
 import 'driver_ratings.dart';
 import 'driver_profile.dart';
@@ -9,6 +10,7 @@ import '../widgets/incoming_requests_list.dart';
 import '../widgets/active_trips_list.dart';
 import '../widgets/waiting_for_time_list.dart';
 import '../widgets/scheduled_rides_list.dart';
+import '../widgets/shared_rides_list.dart';
 import '../widgets/today_trips_list.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
@@ -71,25 +73,48 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
             const DriverStatsRow(),
             const SizedBox(height: 24),
 
-            // Active Trips
-            const ActiveTripsList(),
-            const SizedBox(height: 24),
+            // Fetch user profile to check vehicle type
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser?.uid)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const SizedBox.shrink();
+                
+                final userData = snapshot.data!.data() as Map<String, dynamic>?;
+                final vehicleType = userData?['vehicleType'] ?? 'Car';
+                // Only Bus drivers see shared rides now
+                final isSharedVehicle = vehicleType == 'Bus';
 
-            // Waiting for Time (Reserved Rides)
-            const WaitingForTimeList(),
-            const SizedBox(height: 24),
-
-            // Scheduled Rides
-            const ScheduledRidesList(),
-            const SizedBox(height: 24),
-
-            // Incoming Requests
-            const IncomingRequestsList(),
-            const SizedBox(height: 24),
-
-            // Today's Trips
-            TodayTripsList(
-              onSeeAll: () => setState(() => _currentIndex = 1),
+                return Column(
+                  children: [
+                    if (isSharedVehicle) ...[
+                      // SHARED RIDE DRIVER VIEW
+                      const SharedRidesList(),
+                      const SizedBox(height: 24),
+                      const ScheduledRidesList(), // Shared drivers can also see schedules
+                    ] else ...[
+                      // PRIVATE RIDE DRIVER VIEW (Car)
+                      const ActiveTripsList(),
+                      const SizedBox(height: 24),
+                      const IncomingRequestsList(),
+                      const SizedBox(height: 24),
+                      const ScheduledRidesList(),
+                    ],
+                    
+                    const SizedBox(height: 24),
+                    
+                    // Common Widgets
+                    const WaitingForTimeList(),
+                    const SizedBox(height: 24),
+                    
+                    TodayTripsList(
+                      onSeeAll: () => setState(() => _currentIndex = 1),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),

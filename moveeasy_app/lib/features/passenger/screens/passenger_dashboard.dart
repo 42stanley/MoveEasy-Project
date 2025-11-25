@@ -4,6 +4,7 @@ import 'ride_request_screen.dart';
 import 'leave_review_screen.dart';
 import 'my_schedules_screen.dart';
 import '../widgets/dashboard_widgets.dart';
+import '../widgets/live_queue_status_widget.dart';
 
 class PassengerDashboard extends StatelessWidget {
   const PassengerDashboard({super.key});
@@ -110,17 +111,7 @@ class PassengerDashboard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Live Queue Status', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('Updated 2 min ago', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const QueueCard(title: 'Greenpark Station', subtitle: 'Stage', count: 8, status: 'Light', color: Colors.green),
-            const QueueCard(title: 'Shamba Hub', subtitle: 'Stage', count: 15, status: 'Moderate', color: Colors.orange),
-            const QueueCard(title: 'Market Square', subtitle: 'Stage', count: 28, status: 'Heavy', color: Colors.red),
+            const LiveQueueStatusWidget(),
             const SizedBox(height: 24),
             const Text('Available Routes', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
