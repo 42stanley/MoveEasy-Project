@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'ride_request_screen.dart';
 import 'leave_review_screen.dart';
+import 'my_schedules_screen.dart';
 import '../widgets/dashboard_widgets.dart';
 
 class PassengerDashboard extends StatelessWidget {
@@ -93,7 +94,12 @@ class PassengerDashboard extends StatelessWidget {
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RideRequestScreen())),
                 ),
                 const SizedBox(width: 12),
-                const QuickAction(icon: Icons.calendar_today_outlined, label: 'Schedules', subLabel: 'View times'),
+                QuickAction(
+                  icon: Icons.calendar_today_outlined,
+                  label: 'Schedules',
+                  subLabel: 'View times',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MySchedulesScreen())),
+                ),
                 const SizedBox(width: 12),
                 QuickAction(
                   icon: Icons.star_outline,

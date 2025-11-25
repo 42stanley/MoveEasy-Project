@@ -7,6 +7,8 @@ import '../widgets/online_toggle_button.dart';
 import '../widgets/driver_stats_row.dart';
 import '../widgets/incoming_requests_list.dart';
 import '../widgets/active_trips_list.dart';
+import '../widgets/waiting_for_time_list.dart';
+import '../widgets/scheduled_rides_list.dart';
 import '../widgets/today_trips_list.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
@@ -69,8 +71,16 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
             const DriverStatsRow(),
             const SizedBox(height: 24),
 
-            // Active Trips (NEW)
+            // Active Trips
             const ActiveTripsList(),
+            const SizedBox(height: 24),
+
+            // Waiting for Time (Reserved Rides)
+            const WaitingForTimeList(),
+            const SizedBox(height: 24),
+
+            // Scheduled Rides
+            const ScheduledRidesList(),
             const SizedBox(height: 24),
 
             // Incoming Requests

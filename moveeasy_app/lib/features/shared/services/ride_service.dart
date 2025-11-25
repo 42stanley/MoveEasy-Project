@@ -48,7 +48,7 @@ class RideService {
     });
   }
 
-  // Stream of incoming requests for drivers
+  // Stream of incoming requests for drivers (immediate requests only, no scheduled)
   Stream<QuerySnapshot> getIncomingRequests() {
     return _firestore
         .collection('ride_requests')
@@ -94,5 +94,22 @@ class RideService {
         .collection('ride_requests')
         .doc(requestId)
         .update({'status': 'cancelled'});
+  }
+
+  // Get scheduled rides (pending rides with scheduledTime)
+  Stream<QuerySnapshot> getScheduledRides() {
+    return _firestore
+        .collection('ride_requests')
+        .where('status', isEqualTo: 'pending')
+        .orderBy('scheduledTime')
+        .snapshots();
+  }
+
+  // Promote a waiting ride to accepted status
+  Future<void> promoteWaitingRide(String requestId) async {
+    await _firestore
+        .collection('ride_requests')
+        .doc(requestId)
+        .update({'status': 'accepted'});
   }
 }

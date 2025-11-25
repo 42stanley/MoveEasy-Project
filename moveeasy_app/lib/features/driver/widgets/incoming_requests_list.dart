@@ -80,10 +80,27 @@ class IncomingRequestsList extends StatelessWidget {
               );
             }
 
+            // Filter out scheduled rides (only show immediate requests)
+            final immediateRequests = snapshot.data!.docs.where((doc) {
+              final data = doc.data() as Map<String, dynamic>;
+              return data['scheduledTime'] == null;
+            }).toList();
+
+            if (immediateRequests.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: const Center(child: Text('No active requests', style: TextStyle(color: Colors.grey))),
+              );
+            }
+
             return Column(
-              children: snapshot.data!.docs.map((doc) {
+              children: immediateRequests.map((doc) {
                 final data = doc.data() as Map<String, dynamic>;
-                final isScheduled = data['scheduledTime'] != null;
                 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -106,13 +123,13 @@ class IncomingRequestsList extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: isScheduled ? Colors.orange[50] : Colors.green[50],
+                              color: Colors.green[50],
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              isScheduled ? 'Scheduled' : 'Now',
+                              'Now',
                               style: TextStyle(
-                                color: isScheduled ? Colors.orange[800] : Colors.green[800],
+                                color: Colors.green[800],
                                 fontWeight: FontWeight.bold,
                                 fontSize: 12,
                               ),

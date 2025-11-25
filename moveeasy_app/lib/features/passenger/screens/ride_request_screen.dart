@@ -84,19 +84,32 @@ class _RideRequestScreenState extends State<RideRequestScreen> {
         cost: _estimatedCost,
         scheduledTime: _scheduledTime,
       );
+      
       if (mounted) {
-        // Navigate to waiting screen with request ID
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => WaitingForDriverScreen(
-              pickup: _pickupController.text.trim(),
-              dropoff: _dropoffController.text.trim(),
-              cost: _estimatedCost,
-              requestId: requestId,
+        if (_scheduledTime != null) {
+          // For scheduled rides, show confirmation and return to dashboard
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Ride scheduled successfully! You will be notified when a driver accepts.'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 4),
             ),
-          ),
-        );
+          );
+          Navigator.pop(context); // Return to dashboard
+        } else {
+          // For immediate rides, navigate to waiting screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => WaitingForDriverScreen(
+                pickup: _pickupController.text.trim(),
+                dropoff: _dropoffController.text.trim(),
+                cost: _estimatedCost,
+                requestId: requestId,
+              ),
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
