@@ -68,7 +68,7 @@ def login():
     return jsonify({"error": "Invalid credentials"}), 401
 
 @app.route('/api/stops')
-@jwt_required()
+# @jwt_required()
 def get_stops():
     try:
         if firebase_initialized:
@@ -87,7 +87,7 @@ def get_stops():
     return jsonify(mock_stops)
 
 @app.route('/api/routes')
-@jwt_required()
+# @jwt_required()
 def get_routes():
     try:
         if firebase_initialized:
@@ -111,7 +111,7 @@ def get_bearing(lat1, lon1, lat2, lon2):
     return (bearing + 360) % 360
 
 @app.route('/api/gtfs-realtime')
-@jwt_required()
+# @jwt_required()
 def gtfs_realtime():
     feed = gtfs_realtime_pb2.FeedMessage()
     feed.header.gtfs_realtime_version = "2.0"
@@ -162,4 +162,4 @@ def gtfs_realtime():
 
 # === RUN ===
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False, threaded=True)
+    app.run(host='0.0.0.0', port=5001, debug=False, threaded=True)

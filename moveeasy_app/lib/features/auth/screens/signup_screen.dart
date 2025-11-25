@@ -1,5 +1,6 @@
 // lib/screens/signup_screen.dart — FINAL 100% WORKING VERSION
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -72,10 +73,12 @@ class _SignupScreenState extends State<SignupScreen> {
       }
 
     } on FirebaseAuthException catch (e) {
+      if (kDebugMode) print('FirebaseAuthException: ${e.code} - ${e.message}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Signup failed'), backgroundColor: Colors.red),
+        SnackBar(content: Text('Auth Error (${e.code}): ${e.message ?? "Signup failed"}'), backgroundColor: Colors.red),
       );
     } catch (e) {
+      if (kDebugMode) print('General Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );

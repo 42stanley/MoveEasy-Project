@@ -13,8 +13,9 @@ import 'package:gtfs_realtime_bindings/gtfs_realtime_bindings.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 
-import 'screens/welcome_screen.dart';
-import 'screens/driver_dashboard.dart';
+import 'features/auth/screens/welcome_screen.dart';
+import 'features/driver/screens/driver_dashboard.dart';
+import 'features/passenger/screens/passenger_dashboard.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -64,7 +65,7 @@ class AuthWrapper extends StatelessWidget {
             if (role == 'driver') {
               return const DriverDashboardScreen(); // INSTANT
             } else {
-              return const MapScreen(); // Full live map
+              return const PassengerDashboard(); // New Dashboard
             }
           },
         );
@@ -91,8 +92,8 @@ class _MapScreenState extends State<MapScreen> {
   late BitmapDescriptor busIcon;
 
   String get baseUrl => Platform.isAndroid
-      ? 'http://10.0.2.2:5000'
-      : 'http://192.168.1.102:5000'; // CHANGE TO YOUR PC IP
+      ? 'http://10.0.2.2:5001'
+      : 'http://192.168.1.102:5001'; // CHANGE TO YOUR PC IP
 
   @override
   void initState() {

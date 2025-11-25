@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     // don't redeclare the plugin version here — use the one already on the classpath
-    id("com.google.gms.google-services") apply false
+    id("com.google.gms.google-services")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")

@@ -1,6 +1,7 @@
 // lib/screens/login_screen.dart — FIXED AUTO-REDIRECT
 
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,7 +25,11 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       // SUCCESS — POP THE LOGIN SCREEN TO TRIGGER REDIRECT
       if (mounted) Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      if (kDebugMode) print('Login Auth Error: ${e.code} - ${e.message}');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login Error (${e.code}): ${e.message}')));
     } catch (e) {
+      if (kDebugMode) print('Login Error: $e');
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login failed: $e')));
     } finally {
       setState(() => _loading = false);
