@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../../../main.dart'; // For MapScreen navigation
+import 'ride_request_screen.dart';
+import 'leave_review_screen.dart';
 import '../widgets/dashboard_widgets.dart';
 
 class PassengerDashboard extends StatelessWidget {
@@ -89,12 +90,17 @@ class PassengerDashboard extends StatelessWidget {
                   icon: Icons.location_on_outlined,
                   label: 'Plan Trip',
                   subLabel: 'Find routes',
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MapScreen())),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RideRequestScreen())),
                 ),
                 const SizedBox(width: 12),
                 const QuickAction(icon: Icons.calendar_today_outlined, label: 'Schedules', subLabel: 'View times'),
                 const SizedBox(width: 12),
-                const QuickAction(icon: Icons.notifications_none_outlined, label: 'Alerts', subLabel: 'Get notified'),
+                QuickAction(
+                  icon: Icons.star_outline,
+                  label: 'Rate',
+                  subLabel: 'Review trip',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaveReviewScreen(driverId: 'test_driver_id'))),
+                ),
               ],
             ),
             const SizedBox(height: 24),
