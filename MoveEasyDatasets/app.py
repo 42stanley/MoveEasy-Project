@@ -97,6 +97,40 @@ def get_routes():
         pass
     return jsonify([])
 
+@app.route('/api/driver/stats/<driver_id>')
+# @jwt_required()
+def get_driver_stats(driver_id):
+    # Mock data - in real app query Firebase/SQL
+    return jsonify({
+        "earnings": "KES 4,500",
+        "trips": 12,
+        "hours": 6.5
+    })
+
+@app.route('/api/driver/trips/<driver_id>')
+# @jwt_required()
+def get_driver_trips(driver_id):
+    return jsonify([
+        {"route": "Kawangware -> CBD", "time": "10:30 AM", "price": "KES 150"},
+        {"route": "Westlands -> Kawangware", "time": "09:15 AM", "price": "KES 200"},
+        {"route": "CBD -> Westlands", "time": "08:00 AM", "price": "KES 100"},
+        {"route": "Kawangware -> Westlands", "time": "07:15 AM", "price": "KES 180"},
+    ])
+
+@app.route('/api/driver/reviews/<driver_id>')
+# @jwt_required()
+def get_driver_reviews(driver_id):
+    return jsonify({
+        "rating": 4.8,
+        "count": 124,
+        "reviews": [
+            {"name": "John Doe", "comment": "Great driver, very smooth ride!", "rating": 5, "date": "Today"},
+            {"name": "Jane Smith", "comment": "Arrived on time, clean bus.", "rating": 5, "date": "Yesterday"},
+            {"name": "Michael Brown", "comment": "A bit fast on the corners.", "rating": 4, "date": "2 days ago"},
+            {"name": "Sarah Wilson", "comment": "Very polite and helpful.", "rating": 5, "date": "Last week"},
+        ]
+    })
+
 # === SMOOTH GTFS-REALTIME - NO MORE JITTER! ===
 def get_bearing(lat1, lon1, lat2, lon2):
     lat1 = math.radians(lat1)

@@ -8,6 +8,7 @@ import 'driver_ratings.dart';
 import 'driver_profile.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/trip_item.dart';
+import '../services/driver_service.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
   const DriverDashboardScreen({super.key});
@@ -20,6 +21,17 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
   int _currentIndex = 0;
   bool _isOnline = false;
   StreamSubscription<Position>? _positionStream;
+  final _driverService = DriverService();
+  late Future<Map<String, dynamic>> _statsFuture;
+  late Future<List<dynamic>> _tripsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'driver1';
+    _statsFuture = _driverService.getDriverStats(uid);
+    _tripsFuture = _driverService.getDriverTrips(uid);
+  }
 
   // List of screens for navigation
   final List<Widget> _screens = [
@@ -198,29 +210,53 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
             const SizedBox(height: 24),
 
             // Stats Row
-            const Row(
-              children: [
-                StatCard(label: 'Earnings', value: 'KES 4,500', icon: Icons.account_balance_wallet, color: Colors.blue),
-                SizedBox(width: 12),
-                StatCard(label: 'Trips', value: '12', icon: Icons.directions_bus, color: Colors.orange),
-                SizedBox(width: 12),
-                StatCard(label: 'Hours', value: '6.5', icon: Icons.access_time, color: Colors.purple),
-              ],
+            FutureBuilder<Map<String, dynamic>>(
+              future: _statsFuture,
+              builder: (context, snapshot) {
+                final data = snapshot.data ?? {"earnings": "...", "trips": 0, "hours": 0.0};
+                return Row(
+                  children: [
+                    StatCard(label: 'Earnings', value: '${data['earnings']}', icon: Icons.account_balance_wallet, color: Colors.blue),
+                    const SizedBox(width: 12),
+                    StatCard(label: 'Trips', value: '${data['trips']}', icon: Icons.directions_bus, color: Colors.orange),
+                    const SizedBox(width: 12),
+                    StatCard(label: 'Hours', value: '${data['hours']}', icon: Icons.access_time, color: Colors.purple),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 24),
 
-            // Recent Activity / Placeholder
-            const Row(
+            // Recent Activity
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Today\'s Trips', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text('See All', style: TextStyle(color: Colors.blue)),
+                const Text('Today\'s Trips', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                GestureDetector(
+                  onTap: () => setState(() => _currentIndex = 1), // Switch to Earnings tab
+                  child: const Text('See All', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                ),
               ],
             ),
             const SizedBox(height: 12),
-            const TripItem(route: 'Kawangware -> CBD', time: '10:30 AM', price: 'KES 150'),
-            const TripItem(route: 'Westlands -> Kawangware', time: '09:15 AM', price: 'KES 200'),
-            const TripItem(route: 'CBD -> Westlands', time: '08:00 AM', price: 'KES 100'),
+            FutureBuilder<List<dynamic>>(
+              future: _tripsFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final trips = snapshot.data ?? [];
+                if (trips.isEmpty) return const Text('No trips yet.');
+
+                return Column(
+                  children: trips.map((trip) => TripItem(
+                    route: trip['route'],
+                    time: trip['time'],
+                    price: trip['price'],
+                  )).toList(),
+                );
+              },
+            ),
           ],
         ),
       ),
