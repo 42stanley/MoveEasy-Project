@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../widgets/review_item.dart';
-import '../services/driver_service.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../widgets/review_item.dart';
 
 class DriverRatingsScreen extends StatefulWidget {
   const DriverRatingsScreen({super.key});
@@ -11,18 +11,10 @@ class DriverRatingsScreen extends StatefulWidget {
 }
 
 class _DriverRatingsScreenState extends State<DriverRatingsScreen> {
-  final _driverService = DriverService();
-  late Future<Map<String, dynamic>> _reviewsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    final uid = FirebaseAuth.instance.currentUser?.uid ?? 'driver1';
-    _reviewsFuture = _driverService.getDriverReviews(uid);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final driverId = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -36,14 +28,26 @@ class _DriverRatingsScreenState extends State<DriverRatingsScreen> {
         child: Column(
           children: [
             // Overall Rating & Reviews
-            FutureBuilder<Map<String, dynamic>>(
-              future: _reviewsFuture,
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('reviews')
+                  .where('driverId', isEqualTo: driverId)
+                  .orderBy('createdAt', descending: true) // Newest first
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                final data = snapshot.data ?? {"rating": 0.0, "count": 0, "reviews": []};
-                final reviews = data['reviews'] as List;
+
+                final reviews = snapshot.data?.docs ?? [];
+                
+                // Calculate average rating
+                double totalRating = 0.0;
+                for (var doc in reviews) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  totalRating += (data['rating'] ?? 0).toDouble();
+                }
+                final avgRating = reviews.isEmpty ? 0.0 : totalRating / reviews.length;
 
                 return Column(
                   children: [
@@ -62,13 +66,13 @@ class _DriverRatingsScreenState extends State<DriverRatingsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text('${data['rating']}', style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
+                              Text(avgRating.toStringAsFixed(1), style: const TextStyle(fontSize: 48, fontWeight: FontWeight.bold)),
                               const SizedBox(width: 8),
                               Icon(Icons.star, color: Colors.amber[600], size: 40),
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Text('Based on ${data['count']} reviews', style: const TextStyle(color: Colors.grey)),
+                          Text('Based on ${reviews.length} reviews', style: const TextStyle(color: Colors.grey)),
                         ],
                       ),
                     ),
@@ -80,12 +84,32 @@ class _DriverRatingsScreenState extends State<DriverRatingsScreen> {
                       child: Text('Recent Reviews', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(height: 12),
-                    ...reviews.map((r) => ReviewItem(
-                      name: r['name'],
-                      comment: r['comment'],
-                      rating: r['rating'],
-                      date: r['date'],
-                    )),
+                    
+                    if (reviews.isEmpty)
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: const Center(child: Text('No reviews yet', style: TextStyle(color: Colors.grey))),
+                      )
+                    else
+                      ...reviews.map((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        final createdAt = data['createdAt'] as Timestamp?;
+                        final dateStr = createdAt != null
+                            ? '${createdAt.toDate().day}/${createdAt.toDate().month}/${createdAt.toDate().year}'
+                            : 'N/A';
+                        
+                        return ReviewItem(
+                          name: data['passengerName'] ?? 'Passenger',
+                          comment: data['comment'] ?? '',
+                          rating: (data['rating'] ?? 0).toDouble(),
+                          date: dateStr,
+                        );
+                      }),
                   ],
                 );
               },
