@@ -4,9 +4,10 @@ import 'package:http/http.dart' as http;
 
 class DriverService {
   // Helper to get base URL based on platform
-  String get baseUrl => Platform.isAndroid
-      ? 'http://10.0.2.2:5001'
-      : 'http://192.168.1.102:5001'; // CHANGE TO YOUR PC IP IF NEEDED
+  String get baseUrl => 'https://moveeasy-project-backend-production.up.railway.app';
+  // String get baseUrl => Platform.isAndroid
+  //     ? 'http://10.0.2.2:5001'
+  //     : 'http://192.168.1.102:5001'; // CHANGE TO YOUR PC IP IF NEEDED
 
   Future<Map<String, dynamic>> getDriverStats(String driverId) async {
     try {

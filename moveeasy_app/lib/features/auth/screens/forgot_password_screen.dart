@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 import '../widgets/auth_widgets.dart';
+import 'reset_password_screen.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -13,6 +16,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   bool _loading = false;
 
+  // Helper to get base URL based on platform
+  String get baseUrl => 'https://moveeasy-project-backend-production.up.railway.app';
+  // String get baseUrl => Platform.isAndroid
+  //     ? 'http://10.0.2.2:5001'
+  //     : 'http://192.168.1.102:5001';
+
   Future<void> _resetPassword() async {
     final email = _emailController.text.trim();
     if (email.isEmpty) {
@@ -20,15 +29,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter a valid email address')));
+      return;
+    }
+
     setState(() => _loading = true);
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Password reset email sent! Check your inbox.'),
-          backgroundColor: Colors.green,
-        ));
-        Navigator.pop(context); // Go back to login
+      // CALL BACKEND TO GET LINK
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/get-reset-link'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final link = data['link'] as String;
+        
+        // Extract oobCode from link
+        final uri = Uri.parse(link);
+        final oobCode = uri.queryParameters['oobCode'];
+
+        if (oobCode != null) {
+          if (mounted) {
+             Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ResetPasswordScreen(oobCode: oobCode)),
+            );
+          }
+        } else {
+          throw Exception('Invalid reset link format');
+        }
+
+      } else {
+        final error = json.decode(response.body)['error'] ?? 'Unknown error';
+        throw Exception(error);
       }
     } catch (e) {
       if (mounted) {
@@ -59,7 +96,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Enter your email address to receive a password reset link.',
+              'Enter your email address to reset your password instantly.',
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
             const SizedBox(height: 32),
@@ -70,9 +107,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ),
             const SizedBox(height: 24),
             AuthButton(
-              text: 'Send Reset Link',
+              text: 'Reset Password',
               onPressed: _resetPassword,
               isLoading: _loading,
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Back to Login', style: TextStyle(color: Colors.grey)),
+              ),
             ),
           ],
         ),

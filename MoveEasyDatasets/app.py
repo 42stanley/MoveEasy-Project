@@ -2,7 +2,7 @@
 from flask import Flask, request, jsonify
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 import firebase_admin
-from firebase_admin import credentials, db
+from firebase_admin import credentials, db, auth
 import hashlib
 import time
 import math
@@ -66,6 +66,24 @@ def login():
         return jsonify(access_token=token)
 
     return jsonify({"error": "Invalid credentials"}), 401
+
+@app.route('/api/auth/get-reset-link', methods=['POST'])
+def get_reset_link():
+    if not firebase_initialized:
+        return jsonify({"error": "Firebase not initialized"}), 500
+
+    data = request.get_json()
+    email = data.get('email')
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    try:
+        # GENERATE LINK (Admin SDK)
+        link = auth.generate_password_reset_link(email)
+        return jsonify({"link": link})
+    except Exception as e:
+        logger.error(f"Reset link error: {e}")
+        return jsonify({"error": str(e)}), 400
 
 @app.route('/api/stops')
 # @jwt_required()
