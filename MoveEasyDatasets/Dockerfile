@@ -20,4 +20,4 @@ EXPOSE 5001
 ENV FLASK_APP=app.py
 
 # Run app.py when the container launches
-CMD ["python", "app.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5001", "app:app"]
