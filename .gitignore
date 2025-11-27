@@ -1,2 +1,68 @@
-# Firebase secrets
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+migrate_working_dir/
+
+# IntelliJ / Android Studio
+*.iml
+*.ipr
+*.iws
+.idea/
+Plan.md
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Flutter/Dart/Pub
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/moveeasy_app/build/
+
+# Android
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+**/android/gradle/wrapper/gradle-wrapper.properties
+**/android/local.properties
+**/android/.gradle
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+
+# iOS
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/ProfileProfile.entitlements
+**/ios/Runner.xcworkspace/xcuserdata/
+
+# macOS
+**/macos/Flutter/ephemeral/
+**/macos/Pods/
+**/macos/.symlinks/
+
+# Firebase / Secrets
+# Exclude these if you want to keep your API keys private in a public repo
+# google-services.json
+# GoogleService-Info.plist
 *firebase-adminsdk*.json

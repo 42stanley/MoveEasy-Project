@@ -1,10 +1,11 @@
-// lib/screens/signup_screen.dart — FINAL 100% WORKING VERSION
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '../widgets/auth_widgets.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -72,15 +73,17 @@ class _SignupScreenState extends State<SignupScreen> {
       }
 
     } on FirebaseAuthException catch (e) {
+      if (kDebugMode) print('FirebaseAuthException: ${e.code} - ${e.message}');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Signup failed'), backgroundColor: Colors.red),
+        SnackBar(content: Text('Auth Error (${e.code}): ${e.message ?? "Signup failed"}'), backgroundColor: Colors.red),
       );
     } catch (e) {
+      if (kDebugMode) print('General Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
     } finally {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -103,12 +106,38 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              TextFormField(controller: _nameController, decoration: const InputDecoration(labelText: 'Full Name'), validator: (v) => v!.isEmpty ? 'Required' : null),
-              TextFormField(controller: _phoneController, decoration: const InputDecoration(labelText: 'Phone'), keyboardType: TextInputType.phone),
-              TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email'), validator: (v) => v!.contains('@') ? null : 'Invalid email'),
-              TextFormField(controller: _passwordController, decoration: const InputDecoration(labelText: 'Password'), obscureText: true, validator: (v) => v!.length >= 6 ? null : 'Min 6 chars'),
-              if (_role == 'driver')
-                TextFormField(controller: _plateController, decoration: const InputDecoration(labelText: 'Plate Number (e.g. KDB 223Y)')),
+              AuthTextField(
+                controller: _nameController,
+                label: 'Full Name',
+                validator: (v) => v!.isEmpty ? 'Required' : null,
+              ),
+              const SizedBox(height: 16),
+              AuthTextField(
+                controller: _phoneController,
+                label: 'Phone',
+                keyboardType: TextInputType.phone,
+              ),
+              const SizedBox(height: 16),
+              AuthTextField(
+                controller: _emailController,
+                label: 'Email',
+                keyboardType: TextInputType.emailAddress,
+                validator: (v) => v!.contains('@') ? null : 'Invalid email',
+              ),
+              const SizedBox(height: 16),
+              AuthTextField(
+                controller: _passwordController,
+                label: 'Password',
+                obscureText: true,
+                validator: (v) => v!.length >= 6 ? null : 'Min 6 chars',
+              ),
+              if (_role == 'driver') ...[
+                const SizedBox(height: 16),
+                AuthTextField(
+                  controller: _plateController,
+                  label: 'Plate Number (e.g. KDB 223Y)',
+                ),
+              ],
               const SizedBox(height: 20),
               SegmentedButton<String>(
                 segments: const [
@@ -119,12 +148,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 onSelectionChanged: (s) => setState(() => _role = s.first),
               ),
               const SizedBox(height: 30),
-              _loading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(
-                      onPressed: _signup,
-                      child: const Text('CREATE ACCOUNT', style: TextStyle(fontSize: 18)),
-                    ),
+              AuthButton(
+                text: 'CREATE ACCOUNT',
+                onPressed: _signup,
+                isLoading: _loading,
+              ),
             ],
           ),
         ),

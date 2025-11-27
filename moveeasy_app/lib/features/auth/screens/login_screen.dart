@@ -1,7 +1,8 @@
-// lib/screens/login_screen.dart — FIXED AUTO-REDIRECT
-
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../widgets/auth_widgets.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,10 +25,14 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       // SUCCESS — POP THE LOGIN SCREEN TO TRIGGER REDIRECT
       if (mounted) Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      if (kDebugMode) print('Login Auth Error: ${e.code} - ${e.message}');
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login Error (${e.code}): ${e.message}')));
     } catch (e) {
+      if (kDebugMode) print('Login Error: $e');
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Login failed: $e')));
     } finally {
-      setState(() => _loading = false);
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -36,28 +41,38 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
+            AuthTextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              label: 'Email',
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 16),
-            TextField(
+            AuthTextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
+              label: 'Password',
               obscureText: true,
             ),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                ),
+                child: const Text('Forgot Password?', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+              ),
+            ),
             const SizedBox(height: 32),
-            _loading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _login,
-                    child: const Text('Log In'),
-                  ),
+            AuthButton(
+              text: 'Log In',
+              onPressed: _login,
+              isLoading: _loading,
+            ),
           ],
         ),
       ),
