@@ -94,4 +94,4 @@ The mobile application for end-users.
 
 ## License
 
-[Add License Information Here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
